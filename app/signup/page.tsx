@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [email, setEmail] = useState('')
@@ -14,6 +15,15 @@ export default function SignUpPage() {
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingGoogle, setLoadingGoogle] = useState(false)
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      setMessage(decodeURIComponent(errorParam))
+      // Clean up URL
+      router.replace('/signup')
+    }
+  }, [searchParams, router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,7 +93,10 @@ export default function SignUpPage() {
           onClick={async () => {
             setMessage('')
             setLoadingGoogle(true)
-            const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
+            const { error } = await supabase.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: `${window.location.origin}/auth/callback` },
+            })
             setLoadingGoogle(false)
             if (error) setMessage(error.message)
           }}

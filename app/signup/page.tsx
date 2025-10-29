@@ -20,14 +20,23 @@ export default function SignUpPage() {
     setLoading(true)
     setMessage('')
 
-    const { error } = await supabase.auth.signUp({ email, password })
-    setLoading(false)
-
-    if (error) {
-      setMessage(error.message)
-    } else {
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      setLoading(false)
+      if (!res.ok) {
+        setMessage(data?.error || 'Sign up failed')
+        return
+      }
       setMessage('Account created! Check your email for confirmation.')
       router.push('/login')
+    } catch (err: any) {
+      setLoading(false)
+      setMessage('Network error')
     }
   }
 

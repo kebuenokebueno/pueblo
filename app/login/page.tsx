@@ -20,15 +20,23 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-
-    if (error) {
-      setError(error.message)
-      return
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      setLoading(false)
+      if (!res.ok) {
+        setError(data?.error || 'Login failed')
+        return
+      }
+      router.push('/')
+    } catch (err: any) {
+      setLoading(false)
+      setError('Network error')
     }
-
-    router.push('/')
   }
 
   return (

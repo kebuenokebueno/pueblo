@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       redirectUrl.pathname = '/'
     }
     return NextResponse.redirect(redirectUrl)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('OAuth callback error:', error)
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent('Authentication failed')}`, request.url))
   }

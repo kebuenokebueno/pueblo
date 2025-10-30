@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ user: data.user })
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 }

@@ -1,0 +1,20 @@
+# .coderabbit.yaml
+version: 1
+review:
+  trigger:
+    # Run review only when PR targets 'develop'
+    on_target_branches:
+      - develop
+  rules:
+    - name: Performance
+      enabled: true
+    - name: Code Quality
+      enabled: true
+    - name: Security
+      enabled: true
+  comments:
+    inline: true
+    summary: true
+  style:
+    tone: professional
+    language: english

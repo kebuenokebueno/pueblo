@@ -8,8 +8,8 @@ jobs:
   ai-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Run CodeRabbit Review
-        uses: coderabbitai/coderabbit-action@v1
+      - name: Run CodeRabbit AI Review
+        uses: coderabbitai/github-action@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CODERABBIT_API_KEY: ${{ secrets.CODERABBIT_API_KEY }}

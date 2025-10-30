@@ -1,0 +1,15 @@
+name: CodeRabbit Review All PRs
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run CodeRabbit Review
+        uses: coderabbitai/coderabbit-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODERABBIT_API_KEY: ${{ secrets.CODERABBIT_API_KEY }}

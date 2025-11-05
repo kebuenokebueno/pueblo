@@ -19,17 +19,11 @@ export function useLoginHandlers(
     setError(null)
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json()
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       setLoading(false)
-    
-      if (!res.ok) {
-        setError(data?.error || 'Login failed')
+
+      if (error || !data.session) {
+        setError(error?.message || 'Login failed')
         return
       }
       try {

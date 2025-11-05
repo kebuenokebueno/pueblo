@@ -1,3 +1,5 @@
+"use client"
+
 import Image from "next/image"
 import LogoutButton from '@/components/LogoutButton'
 import LocationCapture from '@/components/LocationCapture'

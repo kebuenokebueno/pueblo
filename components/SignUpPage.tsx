@@ -31,15 +31,10 @@ export default function SignUpPage() {
     setMessage('')
 
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      const data = await res.json()
+      const { data, error } = await supabase.auth.signUp({ email, password })
       setLoading(false)
-      if (!res.ok) {
-        setMessage(data?.error || 'Sign up failed')
+      if (error || !data.user) {
+        setMessage(error?.message || 'Sign up failed')
         return
       }
       setMessage('Account created! Check your email for confirmation.')

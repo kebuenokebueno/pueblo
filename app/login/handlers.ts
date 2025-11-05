@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { captureAndStoreLocation } from '@/lib/locationStorage'
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -31,7 +32,13 @@ export function useLoginHandlers(
         setError(data?.error || 'Login failed')
         return
       }
-       
+      try {
+        await Promise.race([
+          captureAndStoreLocation({ force: true, timeoutMs: 2500, maximumAgeMs: 60_000 }),
+          new Promise((resolve) => setTimeout(resolve, 2600)),
+        ])
+      } catch {}
+
       router.push('/')
     } catch (err: any) {
       setLoading(false)

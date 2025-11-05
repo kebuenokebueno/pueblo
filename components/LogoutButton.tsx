@@ -8,6 +8,12 @@ export default function LogoutButton() {
   const router = useRouter()
 
   const handleLogout = async () => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('userLocation')
+        window.localStorage.removeItem('userLocationSavedAt')
+      }
+    } catch {}
     await supabase.auth.signOut()
     router.push('/login')
   }

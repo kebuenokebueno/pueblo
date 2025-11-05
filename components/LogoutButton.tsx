@@ -1,6 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
+import { clearStoredLocation } from '@/lib/locationStorage'
 import { useRouter } from 'next/navigation'
 
 export default function LogoutButton() {
@@ -9,10 +10,7 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     try {
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('userLocation')
-        window.localStorage.removeItem('userLocationSavedAt')
-      }
+      await clearStoredLocation()
     } catch {}
     await supabase.auth.signOut()
     router.push('/login')

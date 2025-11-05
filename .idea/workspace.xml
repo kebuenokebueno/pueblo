@@ -33,7 +33,6 @@
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "disable.download.node.interpreter.editor.notification": "true",
-    "git-widget-placeholder": "feature/login",
     "js.debugger.nextJs.config.created.client": "true",
     "js.debugger.nextJs.config.created.server": "true",
     "junie.onboarding.icon.badge.shown": "true",
@@ -50,7 +49,7 @@
     "npm.Next.js: server-side.executor": "Run",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "/Users/inigo/frontend/pueblo/node_modules/typescript/lib",
+    "ts.external.directory.path": "/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -91,7 +90,7 @@
       <workItem from="1761823244080" duration="7144000" />
       <workItem from="1761900415124" duration="25857000" />
       <workItem from="1762258815931" duration="2000" />
-      <workItem from="1762330571239" duration="1037000" />
+      <workItem from="1762330571239" duration="1895000" />
     </task>
     <servers />
   </component>

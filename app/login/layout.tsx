@@ -6,18 +6,18 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const supabase = createClient()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+      const supabase = createClient()
+      supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         router.replace('/')
       } else {
         setChecking(false)
       }
     })
-  }, [router, supabase])
+  }, [router])
 
   if (checking) {
     return (

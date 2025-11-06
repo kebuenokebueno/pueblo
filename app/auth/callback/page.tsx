@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const supabase = createClient()
   const [status, setStatus] = useState<'verifying' | 'error'>('verifying')
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const exchange = async () => {
-      const nextParams = new URLSearchParams(window.location.search)
+        const supabase = createClient()
+        const nextParams = new URLSearchParams(window.location.search)
       const next = nextParams.get('next') || '/'
 
       const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
@@ -29,7 +29,7 @@ export default function AuthCallbackPage() {
       setStatus('error')
       setMessage(err instanceof Error ? err.message : 'Unexpected error')
     })
-  }, [router, supabase])
+  }, [router])
 
   if (status === 'error') {
     return (

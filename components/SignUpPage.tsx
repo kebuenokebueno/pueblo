@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createPuebloClient } from '@/lib/supabase/client'
 
 export default function SignUpPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
+  const supabase = createPuebloClient()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

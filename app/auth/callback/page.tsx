@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createPuebloClient } from '@/lib/supabase/client'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -11,7 +11,7 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const exchange = async () => {
-        const supabase = createClient()
+        const supabase = createPuebloClient()
         const nextParams = new URLSearchParams(window.location.search)
       const next = nextParams.get('next') || '/'
 

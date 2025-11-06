@@ -15,7 +15,6 @@
     "@capacitor/android": "^7.4.4",
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
-    "@supabase/ssr": "^0.7.0",
     "next": "16.0.1",
     "react": "19.2.0",
     "react-dom": "19.2.0"

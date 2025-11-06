@@ -30,16 +30,14 @@ export const captureAndStoreLocation = async (
     const raw = await storageGet(LOCATION_TIMESTAMP_KEY)
     const ts = raw ? Number(raw) : NaN
     if (!Number.isNaN(ts) && Date.now() - ts < maxAgeMs) {
-      const cached = await storageGet(LOCATION_KEY)
-      if (cached) {
-        try {
-          return JSON.parse(cached) as LocationSnapshot
-        } catch {
-          // fall through to refresh
+        const cached = await storageGet(LOCATION_KEY)
+        if (cached) {
+            try {
+                return JSON.parse(cached) as LocationSnapshot
+            } catch {
+                // fall through to refresh
+            }
         }
-      } else {
-        return null
-      }
     }
   }
 

@@ -7,14 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "export": "next build && next export",
     "cap:sync": "bunx cap sync",
     "cap:open:ios": "bunx cap open ios",
     "cap:open:android": "bunx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
-    "@capacitor/core": "^6.1.2",
+    "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
     "@supabase/ssr": "^0.7.0",
     "next": "16.0.1",
@@ -30,6 +29,6 @@
     "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
-    "@capacitor/cli": "^6.1.2"
+    "@capacitor/cli": "^7.4.4"
   }
 }

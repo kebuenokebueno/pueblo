@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import HomePage from '@/components/HomePage'
-import {createPuebloClient} from "@/lib/supabase/client";
+import {getPuebloClient} from "@/lib/supabase/client";
 
 export default function Home() {
   const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'authed'>('loading')
 
   useEffect(() => {
-      const supabase = createPuebloClient()
+      const supabase = getPuebloClient()
       supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setStatus('authed')

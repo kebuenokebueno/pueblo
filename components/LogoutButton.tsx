@@ -2,10 +2,10 @@
 
 import { clearStoredLocation } from '@/lib/locationStorage'
 import { useRouter } from 'next/navigation'
-import {createPuebloClient} from "@/lib/supabase/client";
+import {getPuebloClient} from "@/lib/supabase/client";
 
 export default function LogoutButton() {
-  const supabase = createPuebloClient()
+  const supabase = getPuebloClient()
   const router = useRouter()
 
   const handleLogout = async () => {

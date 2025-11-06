@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPuebloClient } from '@/lib/supabase/client'
+import { getPuebloClient } from '@/lib/supabase/client'
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-      const supabase = createPuebloClient()
+      const supabase = getPuebloClient()
       supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         router.replace('/')

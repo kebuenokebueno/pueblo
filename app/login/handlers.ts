@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { captureAndStoreLocation } from '@/lib/locationStorage'
-import {createPuebloClient} from "@/lib/supabase/client";
+import {getPuebloClient} from "@/lib/supabase/client";
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -12,7 +12,7 @@ export function useLoginHandlers(
   setLoadingGoogle: (value: boolean) => void
 ) {
   const router = useRouter()
-  const supabase = createPuebloClient()
+  const supabase = getPuebloClient()
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true)

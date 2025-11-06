@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { captureAndStoreLocation } from '@/lib/locationStorage'
+import {getPuebloClient} from "@/lib/supabase/client";
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -11,27 +12,27 @@ export function useLoginHandlers(
   setLoadingGoogle: (value: boolean) => void
 ) {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getPuebloClient()
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-
-      const data = await res.json()
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       setLoading(false)
-    
-      if (!res.ok) {
-        setError(data?.error || 'Login failed')
+
+      if (error || !data.session) {
+        setError(error?.message || 'Login failed')
         return
       }
-       
+      try {
+        await Promise.race([
+          captureAndStoreLocation({ force: true, timeoutMs: 2500, maximumAgeMs: 60_000 }),
+          new Promise((resolve) => setTimeout(resolve, 2600)),
+        ])
+      } catch {}
+
       router.push('/')
     } catch (err: any) {
       setLoading(false)

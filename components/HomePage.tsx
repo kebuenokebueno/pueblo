@@ -1,5 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import LogoutButton from '@/components/LogoutButton'
+import LocationCapture from '@/components/LocationCapture'
 
 export default function HomePage() {
   return (
@@ -61,6 +64,7 @@ export default function HomePage() {
           </a>
         </div>
         <LogoutButton />
+        <LocationCapture />
       </main>
     </div>
   )

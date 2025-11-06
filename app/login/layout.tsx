@@ -1,11 +1,31 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
 
-export default async function LoginLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createServerSupabaseClient()
-  const { data } = await supabase.auth.getUser()
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { getPuebloClient } from '@/lib/supabase/client'
 
-  if (data.user) redirect('/') // Already logged in → redirect to home
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+      const supabase = getPuebloClient()
+      supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        router.replace('/')
+      } else {
+        setChecking(false)
+      }
+    })
+  }, [router])
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="bg-white p-6 rounded-2xl shadow-md">Checking session…</div>
+      </div>
+    )
+  }
 
   return <>{children}</>
 }

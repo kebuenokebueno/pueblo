@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import LoginForm from '@/components/LoginForm'
 import { useLoginHandlers } from './handlers'
@@ -25,11 +25,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
-    if (errorParam) {
-      setError(decodeURIComponent(errorParam))
-      // Clean up URL
-      router.replace('/login')
-    }
+    if (!errorParam) return
+
+    const decodedError = decodeURIComponent(errorParam)
+    startTransition(() => {
+      setError(decodedError)
+    })
+
+    router.replace('/login')
   }, [searchParams, router])
 
   return (

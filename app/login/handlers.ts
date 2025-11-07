@@ -2,7 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 import { captureAndStoreLocation } from '@/lib/locationStorage'
-import {getPuebloClient} from "@/lib/supabase/client";
+import { getPuebloClient } from '@/lib/supabase/client'
+import { useAppDispatch } from '@/lib/store/hooks'
+import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -13,10 +15,12 @@ export function useLoginHandlers(
 ) {
   const router = useRouter()
   const supabase = getPuebloClient()
+  const dispatch = useAppDispatch()
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
+    dispatch(resetMunicipios())
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -33,8 +37,14 @@ export function useLoginHandlers(
         ])
       } catch {}
 
+      try {
+        await dispatch(fetchMunicipios()).unwrap()
+      } catch (fetchError) {
+        console.error('Failed to fetch municipios after login', fetchError)
+      }
+
       router.push('/')
-    } catch (err: any) {
+    } catch (error: unknown) {
       setLoading(false)
       setError('Network error')
     }

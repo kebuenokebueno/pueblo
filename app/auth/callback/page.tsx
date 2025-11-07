@@ -3,16 +3,19 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getPuebloClient } from '@/lib/supabase/client'
+import { useAppDispatch } from '@/lib/store/hooks'
+import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const [status, setStatus] = useState<'verifying' | 'error'>('verifying')
   const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const exchange = async () => {
-        const supabase = getPuebloClient()
-        const nextParams = new URLSearchParams(window.location.search)
+      const supabase = getPuebloClient()
+      const nextParams = new URLSearchParams(window.location.search)
       const next = nextParams.get('next') || '/'
 
       const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
@@ -22,6 +25,14 @@ export default function AuthCallbackPage() {
         return
       }
 
+      dispatch(resetMunicipios())
+
+      try {
+        await dispatch(fetchMunicipios()).unwrap()
+      } catch (fetchError) {
+        console.error('Failed to fetch municipios after OAuth login', fetchError)
+      }
+
       router.replace(next === '/auth/callback' ? '/' : next)
     }
 
@@ -29,7 +40,7 @@ export default function AuthCallbackPage() {
       setStatus('error')
       setMessage(err instanceof Error ? err.message : 'Unexpected error')
     })
-  }, [router])
+  }, [dispatch, router])
 
   if (status === 'error') {
     return (

@@ -1,3 +1,5 @@
+"use client"
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 let supabase: SupabaseClient | null = null
@@ -12,11 +14,13 @@ export const getPuebloClient = (): SupabaseClient => {
         throw new Error('Missing Supabase environment variables')
     }
 
+    const storage = typeof window !== 'undefined' ? window.localStorage : undefined
+
     supabase = createClient(url, anonKey, {
         auth: {
             persistSession: true,
             autoRefreshToken: true,
-            storage: localStorage,
+            storage,
         },
     })
 

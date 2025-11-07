@@ -1,70 +1,130 @@
 "use client"
 
 import Image from "next/image"
+import { useCallback, useEffect } from "react"
+
 import LogoutButton from '@/components/LogoutButton'
 import LocationCapture from '@/components/LocationCapture'
+import { getPuebloClient } from '@/lib/supabase/client'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
+import { fetchMunicipios } from '@/lib/store/municipiosSlice'
+import {
+  selectMunicipios,
+  selectMunicipiosError,
+  selectMunicipiosStatus,
+} from '@/lib/store/selectors'
 
 export default function HomePage() {
+  const dispatch = useAppDispatch()
+  const items = useAppSelector(selectMunicipios)
+  const status = useAppSelector(selectMunicipiosStatus)
+  const error = useAppSelector(selectMunicipiosError)
+
+  const handleFetch = useCallback(() => {
+    void dispatch(fetchMunicipios())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (status !== 'idle') return
+
+    const supabase = getPuebloClient()
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        handleFetch()
+      }
+    })
+  }, [handleFetch, status])
+
+  const handleRetry = useCallback(() => {
+    handleFetch()
+  }, [handleFetch])
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      <main className="flex min-h-screen w-full max-w-4xl flex-col gap-12 py-16 px-10 md:px-16 bg-white dark:bg-black">
+        <header className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
+          <Image
+            className="dark:invert"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={120}
+            height={24}
+            priority
+          />
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
+              Bienvenido a Pueblo
+            </h1>
+            <p className="mt-2 text-lg leading-7 text-zinc-600 dark:text-zinc-400">
+              Consulta rápidamente los primeros municipios disponibles en tu base de datos.
+            </p>
+          </div>
+        </header>
+
+        <section className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Municipios</h2>
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+              Mostrando hasta 10 resultados
+            </span>
+          </div>
+
+          {status === 'loading' && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">Cargando municipios…</p>
+          )}
+
+          {status === 'failed' && (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-red-600">
+                No fue posible recuperar los municipios{error ? `: ${error}` : ''}
+              </p>
+              <button
+                onClick={handleRetry}
+                className="self-start rounded-full border border-zinc-300 px-4 py-1 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
+
+          {status === 'succeeded' && items.length === 0 && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              No se encontraron municipios para mostrar.
+            </p>
+          )}
+
+          {items.length > 0 && (
+            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {items.map((municipio) => (
+                <li key={municipio.id} className="py-3 first:pt-0 last:pb-0">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                      <span className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                        {municipio.NOMBRE_ACTUAL ?? 'Nombre no disponible'}
+                      </span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {municipio.PROVINCIA ?? 'Provincia desconocida'}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+                      <span>Habitantes: {municipio.POBLACION_MUNI ?? 'N/D'}</span>
+                      <span>Código INE: {municipio.COD_INE ?? 'N/D'}</span>
+                      <span>
+                        Coordenadas: {municipio.LATITUD_ETRS89 ?? 'N/D'}, {municipio.LONGITUD_ETRS89 ?? 'N/D'}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <div className="flex flex-col items-start gap-6">
+          <LocationCapture />
+          <LogoutButton />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-        <LogoutButton />
-        <LocationCapture />
       </main>
     </div>
   )

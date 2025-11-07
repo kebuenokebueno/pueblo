@@ -34,19 +34,8 @@ export const fetchMunicipios = createAsyncThunk<
 >('municipios/fetchFirst10', async (_, { rejectWithValue }) => {
   const supabase = getPuebloClient()
 
-  const { data, error } = await supabase
-    .from('Municipios')
-    .select(
-      `id,
-       COD_INE,
-       NOMBRE_ACTUAL,
-       PROVINCIA,
-       POBLACION_MUNI,
-       LONGITUD_ETRS89,
-       LATITUD_ETRS89`
-    )
-    .order('id', { ascending: true })
-    .limit(10)
+    const { data, error } = await supabase
+        .rpc('municipios_cercanos', { lat_input: 42.927777777778, lon_input: -3.4866666666667 });
 
   if (error) {
     return rejectWithValue(error.message)

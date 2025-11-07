@@ -5,6 +5,7 @@ import { useCallback, useEffect } from "react"
 
 import LogoutButton from '@/components/LogoutButton'
 import LocationCapture from '@/components/LocationCapture'
+import dynamic from 'next/dynamic'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
@@ -15,6 +16,7 @@ import {
 } from '@/lib/store/selectors'
 
 export default function HomePage() {
+  const MunicipiosMap = dynamic(() => import('@/components/MunicipiosMap'), { ssr: false })
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
@@ -118,6 +120,25 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Mapa</h2>
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">Visualiza su ubicación aproximada</span>
+          </div>
+
+          {status === 'loading' && (
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">Preparando el mapa…</p>
+          )}
+
+          {status === 'succeeded' && <MunicipiosMap municipios={items} />}
+
+          {status === 'failed' && (
+            <p className="text-sm text-red-600">
+              No se puede mostrar el mapa sin datos disponibles.
+            </p>
           )}
         </section>
 

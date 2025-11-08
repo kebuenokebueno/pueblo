@@ -20,7 +20,6 @@ export default function HomePage() {
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
-  const error = useAppSelector(selectMunicipiosError)
 
   const handleFetch = useCallback(() => {
     void dispatch(fetchMunicipios())
@@ -37,10 +36,6 @@ export default function HomePage() {
       }
     })
   }, [handleFetch, status])
-
-  const handleRetry = useCallback(() => {
-    handleFetch()
-  }, [handleFetch])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

@@ -51,11 +51,9 @@ export const fetchMunicipios = createAsyncThunk<
       }
     }
   } catch {
-    // ignore parse errors
   }
 
   if (latInput === null || lonInput === null) {
-    // No coordinates available; return empty list to keep UI predictable
     return [] as Municipio[]
   }
 

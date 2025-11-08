@@ -64,65 +64,6 @@ export default function HomePage() {
           </div>
         </header>
 
-        <section className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Municipios</h2>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              Mostrando hasta 10 resultados
-            </span>
-          </div>
-
-          {status === 'loading' && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Cargando municipios…</p>
-          )}
-
-          {status === 'failed' && (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-red-600">
-                No fue posible recuperar los municipios{error ? `: ${error}` : ''}
-              </p>
-              <button
-                onClick={handleRetry}
-                className="self-start rounded-full border border-zinc-300 px-4 py-1 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
-              >
-                Reintentar
-              </button>
-            </div>
-          )}
-
-          {status === 'succeeded' && items.length === 0 && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              No se encontraron municipios para mostrar.
-            </p>
-          )}
-
-          {items.length > 0 && (
-            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-              {items.map((municipio) => (
-                <li key={municipio.id} className="py-3 first:pt-0 last:pb-0">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                      <span className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                        {municipio.NOMBRE_ACTUAL ?? 'Nombre no disponible'}
-                      </span>
-                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                        {municipio.PROVINCIA ?? 'Provincia desconocida'}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span>Habitantes: {municipio.POBLACION_MUNI ?? 'N/D'}</span>
-                      <span>Código INE: {municipio.COD_INE ?? 'N/D'}</span>
-                      <span>
-                        Coordenadas: {municipio.LATITUD_ETRS89 ?? 'N/D'}, {municipio.LONGITUD_ETRS89 ?? 'N/D'}
-                      </span>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Mapa</h2>

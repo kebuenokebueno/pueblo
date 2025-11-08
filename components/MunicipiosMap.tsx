@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import L, { LatLngExpression } from 'leaflet'
 
 import type { Municipio } from '@/lib/store/municipiosSlice'
@@ -35,11 +35,50 @@ const parseCoordinate = (value: string | null) => {
 export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
   const markerIcon = useMemo(() => createDefaultIcon(), [])
 
+  const getFirstString = (obj: Record<string, unknown>, keys: string[]): string | null => {
+    for (const key of keys) {
+      const value = obj[key]
+      if (typeof value === 'string') return value
+      if (typeof value === 'number') return String(value)
+    }
+    return null
+  }
+
+  const parseLat = (raw: string | null) => {
+    const n = parseCoordinate(raw)
+    if (n === null) return null
+    return n >= -90 && n <= 90 ? n : null
+  }
+
+  const parseLng = (raw: string | null) => {
+    const n = parseCoordinate(raw)
+    if (n === null) return null
+    return n >= -180 && n <= 180 ? n : null
+  }
+
   const markers = useMemo(() => {
     return municipios
       .map((municipio) => {
-        const lat = parseCoordinate(municipio.LATITUD_ETRS89)
-        const lng = parseCoordinate(municipio.LONGITUD_ETRS89)
+        const asRecord = municipio as unknown as Record<string, unknown>
+        const lat = parseLat(
+          getFirstString(asRecord, [
+            'LATITUD_ETRS89',
+            'latitud_etrs89',
+            'latitud',
+            'latitude',
+            'lat',
+          ])
+        )
+        const lng = parseLng(
+          getFirstString(asRecord, [
+            'LONGITUD_ETRS89',
+            'longitud_etrs89',
+            'longitud',
+            'longitude',
+            'lon',
+            'lng',
+          ])
+        )
 
         if (Number.isNaN(lat) || Number.isNaN(lng) || lat === null || lng === null) {
           return null
@@ -61,7 +100,29 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     )
   }
 
-  const center = markers[0]?.position ?? DEFAULT_CENTER
+  const center = (() => {
+    try {
+      const positions = markers.map((m) => m.position as [number, number])
+      const total = positions.length
+      const [sumLat, sumLng] = positions.reduce(
+        (acc, [lat, lng]) => [acc[0] + lat, acc[1] + lng],
+        [0, 0]
+      )
+      return [sumLat / total, sumLng / total] as LatLngExpression
+    } catch {
+      return markers[0]?.position ?? DEFAULT_CENTER
+    }
+  })()
+
+  const FitBounds = ({ points }: { points: Array<[number, number]> }) => {
+    const map = useMap()
+    useMemo(() => {
+      if (points.length === 0) return
+      const bounds = L.latLngBounds(points.map((p) => L.latLng(p[0], p[1])))
+      map.fitBounds(bounds, { padding: [32, 32] })
+    }, [map, points])
+    return null
+  }
 
   return (
     <MapContainer
@@ -74,6 +135,7 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <FitBounds points={markers.map((m) => m.position as [number, number])} />
       {markers.map(({ municipio, position }) => (
         <Marker key={municipio.id} position={position} icon={markerIcon}>
           <Popup>

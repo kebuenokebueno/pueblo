@@ -51,14 +51,16 @@ export const fetchMunicipios = createAsyncThunk<
       }
     }
   } catch {
+    // ignore parse errors
   }
 
   if (latInput === null || lonInput === null) {
+    // No coordinates available; return empty list to keep UI predictable
     return [] as Municipio[]
   }
 
   const { data, error } = await supabase
-    .rpc('municipios_cercanos', { lat_input: latInput, lon_input: lonInput });
+      .rpc('municipios_cercanos', { lat_input: latInput, lon_input: lonInput });
 
   if (error) {
     return rejectWithValue(error.message)

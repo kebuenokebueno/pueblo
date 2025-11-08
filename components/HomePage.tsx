@@ -11,7 +11,6 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
 import {
   selectMunicipios,
-  selectMunicipiosError,
   selectMunicipiosStatus,
 } from '@/lib/store/selectors'
 

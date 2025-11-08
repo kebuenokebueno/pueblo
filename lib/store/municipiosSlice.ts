@@ -3,6 +3,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 import { getPuebloClient } from '@/lib/supabase/client'
+import { storageGet } from '@/lib/platform/storage'
+import { LOCATION_KEY } from '@/lib/locationStorage'
 
 export interface Municipio {
   id: number
@@ -34,8 +36,31 @@ export const fetchMunicipios = createAsyncThunk<
 >('municipios/fetchFirst10', async (_, { rejectWithValue }) => {
   const supabase = getPuebloClient()
 
-    const { data, error } = await supabase
-        .rpc('municipios_cercanos', { lat_input: 42.927777777778, lon_input: -3.4866666666667 });
+  // Pull last known coordinates from local storage (via platform adapter)
+  let latInput: number | null = null
+  let lonInput: number | null = null
+  try {
+    const raw = await storageGet(LOCATION_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw) as { lat?: unknown; lng?: unknown }
+      const lat = typeof parsed.lat === 'number' ? parsed.lat : Number(parsed.lat)
+      const lng = typeof parsed.lng === 'number' ? parsed.lng : Number(parsed.lng)
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        latInput = lat as number
+        lonInput = lng as number
+      }
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  if (latInput === null || lonInput === null) {
+    // No coordinates available; return empty list to keep UI predictable
+    return [] as Municipio[]
+  }
+
+  const { data, error } = await supabase
+    .rpc('municipios_cercanos', { lat_input: latInput, lon_input: lonInput });
 
   if (error) {
     return rejectWithValue(error.message)

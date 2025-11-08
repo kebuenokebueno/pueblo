@@ -1,3 +1,7 @@
+import { Geolocation } from '@capacitor/geolocation'
+import { Capacitor } from '@capacitor/core'
+
+
 export interface LocationSnapshot {
   lat: number
   lng: number
@@ -60,18 +64,40 @@ const defaultProvider: LocationProvider = async (options) => {
   })
 }
 
-export const fetchLocation = async (
-  options?: LocationFetchOptions
-): Promise<LocationSnapshot | null> => {
-  if (customProvider) {
+const capacitorProvider: LocationProvider = async (options) => {
     try {
-      return await customProvider(options)
-    } catch {
-      return null
+        const pos = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: options?.enableHighAccuracy ?? true,
+            timeout: options?.timeoutMs ?? 5000,
+        })
+        return {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            timestamp: pos.timestamp ?? Date.now(),
+        }
+    } catch (err) {
+        console.warn('Capacitor Geolocation failed', err)
+        return null
     }
-  }
+}
 
-  return defaultProvider(options)
+export const fetchLocation = async (
+    options?: LocationFetchOptions
+): Promise<LocationSnapshot | null> => {
+    if (customProvider) {
+        try {
+            return await customProvider(options)
+        } catch {
+            return null
+        }
+    }
+
+    if (Capacitor.isNativePlatform()) {
+        return capacitorProvider(options)
+    }
+
+    return defaultProvider(options)
 }
 
 

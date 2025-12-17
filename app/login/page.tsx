@@ -27,9 +27,8 @@ export default function LoginPage() {
     const errorParam = searchParams.get('error')
     if (!errorParam) return
 
-    const decodedError = decodeURIComponent(errorParam)
     startTransition(() => {
-      setError(decodedError)
+      setError(errorParam)
     })
 
     router.replace('/login')

@@ -55,8 +55,8 @@ export const fetchMunicipios = createAsyncThunk<
   }
 
   if (latInput === null || lonInput === null) {
-    // No coordinates available; return empty list to keep UI predictable
-    return [] as Municipio[]
+      latInput = 43.26271
+      lonInput = -2.92528
   }
 
   const { data, error } = await supabase

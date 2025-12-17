@@ -5,7 +5,6 @@ import {
   storageRemove,
   storageSet,
   setStorageAdapter,
-  AsyncStorageAdapter,
 } from './platform/storage'
 
 export const LOCATION_KEY = 'userLocation'
@@ -55,16 +54,3 @@ export const clearStoredLocation = async () => {
   await storageRemove(LOCATION_KEY)
   await storageRemove(LOCATION_TIMESTAMP_KEY)
 }
-
-export const getStoredLocation = async (): Promise<LocationSnapshot | null> => {
-  if (!(await storageAvailable())) return null
-  const raw = await storageGet(LOCATION_KEY)
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as LocationSnapshot
-  } catch {
-    return null
-  }
-}
-
-

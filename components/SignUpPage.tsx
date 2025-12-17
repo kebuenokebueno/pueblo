@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getPuebloClient } from '@/lib/supabase/client'
@@ -18,11 +18,14 @@ export default function SignUpPage() {
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
-    if (errorParam) {
-      setMessage(decodeURIComponent(errorParam))
-      // Clean up URL
-      router.replace('/signup')
-    }
+    if (!errorParam) return
+
+    const decodedError = decodeURIComponent(errorParam)
+    startTransition(() => {
+      setMessage(decodedError)
+    })
+
+    router.replace('/signup')
   }, [searchParams, router])
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -39,7 +42,7 @@ export default function SignUpPage() {
       }
       setMessage('Account created! Check your email for confirmation.')
       router.push('/login')
-    } catch (err: any) {
+    } catch (error: unknown) {
       setLoading(false)
       setMessage('Network error')
     }

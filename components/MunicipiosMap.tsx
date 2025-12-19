@@ -122,6 +122,13 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     return null
   }
 
+  const formatDistanceKm = (value: unknown): string => {
+    const n = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(n)) return 'N/D'
+    const km = Math.floor(n / 1000)
+    return String(km)
+  }
+
   return (
     <MapContainer
       center={center}
@@ -147,8 +154,8 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
                   {municipio.provincia ?? 'N/D'}
                 </span>
                 <span className="text-sm text-zinc-700 dark:text-zinc-300">
-                  <span className="font-semibold">Habitantes:</span>{' '}
-                  {municipio.poblacion_muni ?? 'N/D'}
+                  <span className="font-semibold">Distancia:</span>{' '}
+                  {formatDistanceKm(municipio.distancia_metros)} km
                 </span>
             </div>
           </Popup>

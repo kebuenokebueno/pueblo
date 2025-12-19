@@ -62,7 +62,6 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         const asRecord = municipio as unknown as Record<string, unknown>
         const lat = parseLat(
           getFirstString(asRecord, [
-            'LATITUD_ETRS89',
             'latitud_etrs89',
             'latitud',
             'latitude',
@@ -71,7 +70,6 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         )
         const lng = parseLng(
           getFirstString(asRecord, [
-            'LONGITUD_ETRS89',
             'longitud_etrs89',
             'longitud',
             'longitude',
@@ -140,16 +138,18 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         <Marker key={municipio.id} position={position} icon={markerIcon}>
           <Popup>
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold">{municipio.NOMBRE_ACTUAL}</span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Provincia: {municipio.PROVINCIA ?? 'Desconocida'}
-              </span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Habitantes: {municipio.POBLACION_MUNI ?? 'N/D'}
-              </span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Código INE: {municipio.COD_INE ?? 'N/D'}
-              </span>
+                <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                  <span className="font-semibold">Municipio:</span>{' '}
+                  {municipio.nombre ?? 'N/D'}
+                </span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold">Provincia:</span>{' '}
+                  {municipio.provincia ?? 'N/D'}
+                </span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold">Habitantes:</span>{' '}
+                  {municipio.poblacion_muni ?? 'N/D'}
+                </span>
             </div>
           </Popup>
         </Marker>

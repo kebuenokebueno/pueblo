@@ -8,12 +8,11 @@ import { LOCATION_KEY } from '@/lib/locationStorage'
 
 export interface Municipio {
   id: number
-  COD_INE: number | null
-  NOMBRE_ACTUAL: string | null
-  PROVINCIA: string | null
-  POBLACION_MUNI: number | null
-  LONGITUD_ETRS89: string | null
-  LATITUD_ETRS89: string | null
+  nombre: string | null
+  provincia: string | null
+  poblacion_muni: number | null
+  longitud_etrsS89: string | null
+  latitud_etrs89: string | null
 }
 
 export type MunicipiosStatus = 'idle' | 'loading' | 'succeeded' | 'failed'

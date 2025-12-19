@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo } from 'react'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { useEffect, useMemo, useState } from 'react'
+import { MapContainer, Marker, Popup, TileLayer, useMap, Circle, CircleMarker } from 'react-leaflet'
 import L, { LatLngExpression } from 'leaflet'
 
 import type { Municipio } from '@/lib/store/municipiosSlice'
+import { storageGet } from '@/lib/platform/storage'
+import { LOCATION_KEY } from '@/lib/locationStorage'
 
 type MunicipiosMapProps = {
   municipios: Municipio[]
@@ -62,7 +64,6 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         const asRecord = municipio as unknown as Record<string, unknown>
         const lat = parseLat(
           getFirstString(asRecord, [
-            'LATITUD_ETRS89',
             'latitud_etrs89',
             'latitud',
             'latitude',
@@ -71,7 +72,6 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
         )
         const lng = parseLng(
           getFirstString(asRecord, [
-            'LONGITUD_ETRS89',
             'longitud_etrs89',
             'longitud',
             'longitude',
@@ -124,32 +124,98 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     return null
   }
 
+  const CurrentLocationLayer = ({ points }: { points: Array<[number, number]> }) => {
+    const map = useMap()
+    const [pos, setPos] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null)
+    const puckIcon = useMemo(
+      () =>
+        L.divIcon({
+          className: '',
+          iconSize: [20, 28],
+          iconAnchor: [10, 18],
+          html: `
+            <div style="position:relative;width:20px;height:28px;">
+              <div style="
+                position:absolute;
+                left:50%;
+                top:18px;
+                transform:translate(-50%,-50%);
+                width:14px;height:14px;border-radius:50%;
+                background:#2563F6;border:3px solid #ffffff;
+                box-shadow:0 6px 12px rgba(37,99,235,0.35);
+              "></div>
+            </div>`,
+        }),
+      []
+    )
+    useEffect(() => {
+      let cancelled = false
+      const load = async () => {
+        try {
+          const raw = await storageGet(LOCATION_KEY)
+          if (raw) {
+            const parsed = JSON.parse(raw) as { lat?: unknown; lng?: unknown }
+            const lat = typeof parsed.lat === 'number' ? parsed.lat : Number(parsed.lat)
+            const lng = typeof parsed.lng === 'number' ? parsed.lng : Number(parsed.lng)
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+              setPos({ lat, lng } as any)
+              return
+            }
+          }
+        } catch {}
+      }
+      load()
+      return () => {
+        cancelled = true
+      }
+    }, [])
+    useEffect(() => {
+      if (!pos) return
+      const all = [...points, [pos.lat, pos.lng] as [number, number]]
+      const bounds = L.latLngBounds(all.map((p) => L.latLng(p[0], p[1])))
+      map.fitBounds(bounds, { padding: [32, 32] })
+    }, [map, pos, points])
+    if (!pos) return null
+    return <Marker position={[pos.lat, pos.lng]} icon={puckIcon} interactive={false} />
+  }
+
+  const formatDistanceKm = (value: unknown): string => {
+    const n = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(n)) return 'N/D'
+    const km = Math.floor(n / 1000)
+    return String(km)
+  }
+
   return (
-    <MapContainer
+      <MapContainer
       center={center}
       zoom={6}
       scrollWheelZoom
-      style={{ height: '420px', width: '100%', borderRadius: '1rem' }}
+        attributionControl={false}
+        style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <FitBounds points={markers.map((m) => m.position as [number, number])} />
+      <CurrentLocationLayer points={markers.map((m) => m.position as [number, number])} />
       {markers.map(({ municipio, position }) => (
         <Marker key={municipio.id} position={position} icon={markerIcon}>
           <Popup>
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold">{municipio.NOMBRE_ACTUAL}</span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Provincia: {municipio.PROVINCIA ?? 'Desconocida'}
-              </span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Habitantes: {municipio.POBLACION_MUNI ?? 'N/D'}
-              </span>
-              <span className="text-xs text-zinc-600 dark:text-zinc-400">
-                Código INE: {municipio.COD_INE ?? 'N/D'}
-              </span>
+                <span className="text-sm text-zinc-900 dark:text-zinc-100">
+                  <span className="font-semibold">Municipio:</span>{' '}
+                  {municipio.nombre ?? 'N/D'}
+                </span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold">Provincia:</span>{' '}
+                  {municipio.provincia ?? 'N/D'}
+                </span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold">Distancia:</span>{' '}
+                  {formatDistanceKm(municipio.distancia_metros)} km
+                </span>
             </div>
           </Popup>
         </Marker>

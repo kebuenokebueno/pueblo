@@ -187,11 +187,12 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
   }
 
   return (
-    <MapContainer
+      <MapContainer
       center={center}
       zoom={6}
       scrollWheelZoom
-      style={{ height: '100%', width: '100%' }}
+        attributionControl={false}
+        style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -68,7 +68,7 @@ export default function HomePage() {
       </div>
 
       <button
-        className="absolute bottom-6 right-6 z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700"
+        className="absolute bottom-6 right-6 z-1000 inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700"
         aria-label="Add"
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">

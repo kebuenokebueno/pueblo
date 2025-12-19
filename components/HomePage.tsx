@@ -1,17 +1,14 @@
 'use client'
 
-import { useCallback, useEffect } from "react"
-
-import LogoutButton from '@/components/LogoutButton'
-import LocationCapture from '@/components/LocationCapture'
+import { useCallback, useEffect } from 'react'
+import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { getPuebloClient } from '@/lib/supabase/client'
+import LocationCapture from '@/components/LocationCapture'
+import LogoutButton from '@/components/LogoutButton'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
+import { getPuebloClient } from '@/lib/supabase/client'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
-import {
-  selectMunicipios,
-  selectMunicipiosStatus,
-} from '@/lib/store/selectors'
+import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
 
 export default function HomePage() {
   const MunicipiosMap = dynamic(() => import('@/components/MunicipiosMap'), { ssr: false })
@@ -36,43 +33,54 @@ export default function HomePage() {
   }, [handleFetch, status])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-4xl flex-col gap-12 py-16 px-10 md:px-16 bg-white dark:bg-black">
-        <header className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-              Bienvenido a Pueblo
-            </h1>
-            <p className="mt-2 text-lg leading-7 text-zinc-600 dark:text-zinc-400">
-              Consulta rápidamente los primeros municipios disponibles en tu base de datos.
-            </p>
+    <div className="relative h-screen w-full overflow-hidden bg-zinc-100">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center px-4 pt-3">
+        <div className="pointer-events-auto flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-md">
+          <div className="flex items-center gap-3">
+            <Image src="/aquiahora-logo.svg" alt="AquiAhora" width={28} height={28} />
+            <span className="text-base font-semibold text-zinc-900">AquiAhora</span>
           </div>
-        </header>
-
-        <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">Mapa</h2>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">Visualiza su ubicación aproximada</span>
-          </div>
-
-          {status === 'loading' && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Preparando el mapa…</p>
-          )}
-
-          {status === 'succeeded' && <MunicipiosMap municipios={items} />}
-
-          {status === 'failed' && (
-            <p className="text-sm text-red-600">
-              No se puede mostrar el mapa sin datos disponibles.
-            </p>
-          )}
-        </section>
-
-        <div className="flex flex-col items-start gap-6">
-          <LocationCapture />
-          <LogoutButton />
+          <button
+            aria-label="Menu"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
-      </main>
+      </div>
+
+      <div className="mt-4 absolute inset-0">
+        {status === 'succeeded' && (
+          <div className="h-full w-full pt-16">
+            <MunicipiosMap municipios={items} />
+          </div>
+        )}
+        {status === 'loading' && (
+          <div className="flex h-full items-center justify-center text-zinc-600">Preparando el mapa…</div>
+        )}
+        {status === 'failed' && (
+          <div className="flex h-full items-center justify-center text-red-600">
+            No se puede mostrar el mapa sin datos disponibles.
+          </div>
+        )}
+      </div>
+
+      <button
+        className="absolute bottom-6 right-6 z-10 inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700"
+        aria-label="Add"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 6v12M6 12h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      <div className="absolute left-4 bottom-6 z-10">
+        <LogoutButton />
+      </div>
+
+      <LocationCapture />
     </div>
   )
 }

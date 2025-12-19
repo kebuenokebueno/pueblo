@@ -191,7 +191,7 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
       center={center}
       zoom={6}
       scrollWheelZoom
-      style={{ height: '420px', width: '100%', borderRadius: '1rem' }}
+      style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

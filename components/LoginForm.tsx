@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface LoginFormProps {
   email: string
@@ -41,54 +42,79 @@ export default function LoginForm({
   onGoogleLogin,
 }: LoginFormProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-sm">
-        <h1 className="text-2xl font-semibold mb-6 text-center">Login</h1>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#eaf2ff] to-[#eef7ef] px-4">
+      <div className="w-full max-w-xl rounded-3xl bg-white p-8 shadow-xl ring-1 ring-black/[0.04]">
+        <div className="mb-6 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-3">
+            <Image src="/aquiahora-logo.svg" alt="AquiAhora logo" width={40} height={40} priority />
+            <span className="text-2xl font-semibold tracking-tight text-zinc-900">AquiAhora</span>
+          </div>
+          <h2 className="text-left w-full text-zinc-700 font-medium">Log in here</h2>
+        </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="border p-2 w-full rounded"
-            value={email}
-            onChange={onEmailChange}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="border p-2 w-full rounded"
-            value={password}
-            onChange={onPasswordChange}
-          />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-zinc-700">E-mail address</label>
+            <input
+              type="email"
+              placeholder="e-mail address"
+              className="w-full rounded-xl border-2 border-zinc-200 px-4 py-3 text-zinc-900 outline-none ring-offset-0 focus:border-blue-500"
+              value={email}
+              onChange={onEmailChange}
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-zinc-700">Password</label>
+            <input
+              type="password"
+              placeholder="password"
+              className="w-full rounded-xl border-2 border-zinc-200 px-4 py-3 text-zinc-900 outline-none focus:border-blue-500"
+              value={password}
+              onChange={onPasswordChange}
+              autoComplete="current-password"
+            />
+            <div className="text-right">
+              <button type="button" className="text-xs font-medium text-blue-600 hover:underline">
+                Forgot password?
+              </button>
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded"
+            className="w-full rounded-xl bg-blue-600 py-3 font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Logging in…' : 'Log in'}
           </button>
         </form>
-        <div className="flex items-center gap-3 my-4">
-          <div className="h-px bg-gray-200 flex-1" />
-          <span className="text-xs text-gray-500">OR</span>
-          <div className="h-px bg-gray-200 flex-1" />
+
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-zinc-200" />
+          <span className="text-xs text-zinc-500">Or log in with Google</span>
+          <div className="h-px flex-1 bg-zinc-200" />
         </div>
+
         <button
           type="button"
           disabled={loadingGoogle}
           onClick={onGoogleLogin}
-          className="w-full border border-gray-300 bg-white text-gray-800 py-2 rounded hover:bg-gray-50 flex items-center justify-center gap-2"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white py-3 text-zinc-800 transition hover:bg-zinc-50"
         >
           {!loadingGoogle && <GoogleIcon />}
-          {loadingGoogle ? 'Redirecting…' : 'Continue with Google'}
+          {loadingGoogle ? 'Redirecting…' : 'Google'}
         </button>
-        {error && <p className="text-red-600 mt-2">{error}</p>}
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
-            Sign up
+
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+        <div className="mt-6 flex items-center justify-center text-sm text-zinc-600">
+          <span>New here? </span>
+          <Link href="/signup" className="ml-2 font-medium text-blue-600 hover:underline">
+            Create an account
           </Link>
-        </p>
+        </div>
       </div>
     </div>
   )

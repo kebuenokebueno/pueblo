@@ -1,6 +1,5 @@
-"use client"
+'use client'
 
-import Image from "next/image"
 import { useCallback, useEffect } from "react"
 
 import LogoutButton from '@/components/LogoutButton'
@@ -40,14 +39,6 @@ export default function HomePage() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-4xl flex-col gap-12 py-16 px-10 md:px-16 bg-white dark:bg-black">
         <header className="flex flex-col items-center gap-4 text-center sm:items-start sm:text-left">
-          <Image
-            className="dark:invert"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={120}
-            height={24}
-            priority
-          />
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
               Bienvenido a Pueblo

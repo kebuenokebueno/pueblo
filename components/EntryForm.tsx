@@ -56,7 +56,7 @@ export default function EntryForm({ open, onClose, place }: Props) {
     setLoading(true)
     try {
 
-        const { _, error } = await supabase
+        const { data, error } = await supabase
             .rpc('insert_entry', {'title': payload.title,'description': payload.description,'entry_date': payload.entry_date,'municipio_id': payload.municipio_id});
 
       if (error) {

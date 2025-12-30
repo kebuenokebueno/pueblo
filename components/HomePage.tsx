@@ -10,6 +10,7 @@ import { getPuebloClient } from '@/lib/supabase/client'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
 import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
 import type { Municipio } from '@/lib/store/municipiosSlice'
+import { setStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
 import EntryForm from '@/components/EntryForm'
 
 export default function HomePage() {
@@ -17,12 +18,15 @@ export default function HomePage() {
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
-  const [selected, setSelected] = useState<Municipio | null>(null)
   const [formOpen, setFormOpen] = useState(false)
 
   const handleFetch = useCallback(() => {
     void dispatch(fetchMunicipios())
   }, [dispatch])
+
+  const handleSelectionChange = useCallback(async (m: Municipio | null) => {
+    await setStoredSelectedMunicipio(m)
+  }, [])
 
   useEffect(() => {
     if (status !== 'idle') return
@@ -60,7 +64,7 @@ export default function HomePage() {
           <div className="h-full w-full pt-16">
             <MunicipiosMap
               municipios={items}
-              onSelectionChange={(m) => setSelected(m)}
+              onSelectionChange={handleSelectionChange}
             />
           </div>
         )}
@@ -89,7 +93,7 @@ export default function HomePage() {
       </div>
 
       <LocationCapture />
-      <EntryForm open={formOpen} onClose={() => setFormOpen(false)} place={selected} />
+      <EntryForm open={formOpen} onClose={() => setFormOpen(false)} />
     </div>
   )
 }

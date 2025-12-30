@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Municipio } from '@/lib/store/municipiosSlice'
-import {getPuebloClient} from "@/lib/supabase/client";
+import { getPuebloClient } from "@/lib/supabase/client"
+import { getStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
 
 type Props = {
   open: boolean
   onClose: () => void
-  place: Municipio | null
 }
 
 const isMobile = () => {
@@ -15,15 +15,22 @@ const isMobile = () => {
   return /iphone|ipad|ipod|android|mobile/i.test(navigator.userAgent)
 }
 
-export default function EntryForm({ open, onClose, place }: Props) {
+export default function EntryForm({ open, onClose }: Props) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState<string>('')
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
+  const [place, setPlace] = useState<Municipio | null>(null)
 
   useEffect(() => {
     if (!open) return
+    const loadPlace = async () => {
+      const stored = await getStoredSelectedMunicipio()
+      setPlace(stored)
+    }
+    loadPlace()
+    
     const d = new Date()
     const y = d.getFullYear()
     const m = String(d.getMonth() + 1).padStart(2, '0')
@@ -56,7 +63,7 @@ export default function EntryForm({ open, onClose, place }: Props) {
     setLoading(true)
     try {
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .rpc('insert_entry', {'title': payload.title,'description': payload.description,'entry_date': payload.entry_date,'municipio_id': payload.municipio_id});
 
       if (error) {
@@ -78,8 +85,8 @@ export default function EntryForm({ open, onClose, place }: Props) {
 
   const placeText = useMemo(() => {
     if (!place) return ''
-    const n = (place as any).nombre ?? place.nombre ?? ''
-    const p = (place as any).provincia ?? place.provincia ?? ''
+    const n = place.nombre ?? ''
+    const p = place.provincia ?? ''
     return [n, p].filter(Boolean).join(' • ')
   }, [place])
 
@@ -156,7 +163,7 @@ export default function EntryForm({ open, onClose, place }: Props) {
                 type="file"
                 multiple
                 accept="image/*"
-                {...(isMobile() ? ({ capture: 'environment' } as any) : {})}
+                {...(isMobile() ? { capture: 'environment' } : {})}
                 onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
                 className="hidden"
               />

@@ -11,8 +11,8 @@ export interface Municipio {
     nombre: string | null
     provincia: string | null
     distancia_metros: number | null
-    longitud_etrsS89: string | null
-    latitud_etrs89: string | null
+    longitud: string | null
+    latitud: string | null
 }
 
 export type MunicipiosStatus = 'idle' | 'loading' | 'succeeded' | 'failed'

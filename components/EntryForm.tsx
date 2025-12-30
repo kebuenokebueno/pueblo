@@ -143,7 +143,7 @@ export default function EntryForm({ open, onClose }: Props) {
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-700">Place</label>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">Place (click on map first)</label>
               <input
                 type="text"
                 value={placeText}

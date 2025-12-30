@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import LocationCapture from '@/components/LocationCapture'
@@ -9,12 +9,16 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
 import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
+import type { Municipio } from '@/lib/store/municipiosSlice'
+import EntryForm from '@/components/EntryForm'
 
 export default function HomePage() {
   const MunicipiosMap = dynamic(() => import('@/components/MunicipiosMap'), { ssr: false })
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
+  const [selected, setSelected] = useState<Municipio | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
 
   const handleFetch = useCallback(() => {
     void dispatch(fetchMunicipios())
@@ -54,7 +58,10 @@ export default function HomePage() {
       <div className="mt-4 absolute inset-0">
         {status === 'succeeded' && (
           <div className="h-full w-full pt-16">
-            <MunicipiosMap municipios={items} />
+            <MunicipiosMap
+              municipios={items}
+              onSelectionChange={(m) => setSelected(m)}
+            />
           </div>
         )}
         {status === 'loading' && (
@@ -68,8 +75,9 @@ export default function HomePage() {
       </div>
 
       <button
-        className="absolute bottom-6 right-6 z-1000 inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700"
+        className="absolute bottom-6 right-6 z-[1000] inline-flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-xl hover:bg-blue-700"
         aria-label="Add"
+        onClick={() => setFormOpen(true)}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M12 6v12M6 12h12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -81,6 +89,7 @@ export default function HomePage() {
       </div>
 
       <LocationCapture />
+      <EntryForm open={formOpen} onClose={() => setFormOpen(false)} place={selected} />
     </div>
   )
 }

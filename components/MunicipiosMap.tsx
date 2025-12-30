@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap, Circle, CircleMarker } from 'react-leaflet'
 import L, { LatLngExpression } from 'leaflet'
 
@@ -10,6 +10,7 @@ import { LOCATION_KEY } from '@/lib/locationStorage'
 
 type MunicipiosMapProps = {
   municipios: Municipio[]
+  onSelectionChange?: (m: Municipio | null) => void
 }
 
 const DEFAULT_CENTER: LatLngExpression = [40.4168, -3.7038]
@@ -34,7 +35,7 @@ const parseCoordinate = (value: string | null) => {
   return Number.isFinite(numericValue) ? numericValue : null
 }
 
-export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
+export default function MunicipiosMap({ municipios, onSelectionChange }: MunicipiosMapProps) {
   const markerIcon = useMemo(() => createDefaultIcon(), [])
 
   const getFirstString = (obj: Record<string, unknown>, keys: string[]): string | null => {
@@ -100,7 +101,7 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     )
   }
 
-  const center = (() => {
+  const center = useMemo(() => {
     try {
       const positions = markers.map((m) => m.position as [number, number])
       const total = positions.length
@@ -112,21 +113,25 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     } catch {
       return markers[0]?.position ?? DEFAULT_CENTER
     }
-  })()
+  }, [markers])
 
-  const FitBounds = ({ points }: { points: Array<[number, number]> }) => {
+  const FitBoundsOnce = ({ points }: { points: Array<[number, number]> }) => {
     const map = useMap()
-    useMemo(() => {
+    const fittedRef = useRef(false)
+    useEffect(() => {
+      if (fittedRef.current) return
       if (points.length === 0) return
       const bounds = L.latLngBounds(points.map((p) => L.latLng(p[0], p[1])))
       map.fitBounds(bounds, { padding: [32, 32] })
-    }, [map, points])
+      fittedRef.current = true
+    }, [map, points.length])
     return null
   }
 
   const CurrentLocationLayer = ({ points }: { points: Array<[number, number]> }) => {
     const map = useMap()
     const [pos, setPos] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null)
+    const fittedRef = useRef(false)
     const puckIcon = useMemo(
       () =>
         L.divIcon({
@@ -171,9 +176,12 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     }, [])
     useEffect(() => {
       if (!pos) return
+      if (fittedRef.current) return
+      if (points.length === 0) return
       const all = [...points, [pos.lat, pos.lng] as [number, number]]
       const bounds = L.latLngBounds(all.map((p) => L.latLng(p[0], p[1])))
       map.fitBounds(bounds, { padding: [32, 32] })
+      fittedRef.current = true
     }, [map, pos, points])
     if (!pos) return null
     return <Marker position={[pos.lat, pos.lng]} icon={puckIcon} interactive={false} />
@@ -200,11 +208,27 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
           maxZoom={20}
           attribution="© OpenStreetMap © CARTO"
       />
-      <FitBounds points={markers.map((m) => m.position as [number, number])} />
+      <FitBoundsOnce points={markers.map((m) => m.position as [number, number])} />
       <CurrentLocationLayer points={markers.map((m) => m.position as [number, number])} />
       {markers.map(({ municipio, position }) => (
-        <Marker key={municipio.id} position={position} icon={markerIcon}>
-          <Popup>
+        <Marker
+          key={municipio.id}
+          position={position}
+          icon={markerIcon}
+          eventHandlers={{ 
+            click: () => {
+              onSelectionChange?.(municipio)
+            }
+          }}
+        >
+          <Popup eventHandlers={{ 
+            open: () => {
+              onSelectionChange?.(municipio)
+            },
+            close: () => {
+              onSelectionChange?.(null)
+            }
+          }}>
             <div className="flex flex-col gap-1">
                 <span className="text-sm text-zinc-900 dark:text-zinc-100">
                   <span className="font-semibold">Municipio:</span>{' '}
@@ -225,4 +249,5 @@ export default function MunicipiosMap({ municipios }: MunicipiosMapProps) {
     </MapContainer>
   )
 }
+
 

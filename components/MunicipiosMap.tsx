@@ -65,19 +65,12 @@ export default function MunicipiosMap({ municipios, onSelectionChange }: Municip
         const asRecord = municipio as unknown as Record<string, unknown>
         const lat = parseLat(
           getFirstString(asRecord, [
-            'latitud_etrs89',
             'latitud',
-            'latitude',
-            'lat',
           ])
         )
         const lng = parseLng(
           getFirstString(asRecord, [
-            'longitud_etrs89',
             'longitud',
-            'longitude',
-            'lon',
-            'lng',
           ])
         )
 

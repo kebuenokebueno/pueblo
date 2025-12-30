@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { Municipio } from '@/lib/store/municipiosSlice'
+import {getPuebloClient} from "@/lib/supabase/client";
 
 type Props = {
   open: boolean
@@ -16,9 +17,10 @@ const isMobile = () => {
 
 export default function EntryForm({ open, onClose, place }: Props) {
   const [title, setTitle] = useState('')
-  const [comments, setComments] = useState('')
+  const [description, setDescription] = useState('')
   const [date, setDate] = useState<string>('')
   const [files, setFiles] = useState<File[]>([])
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -28,9 +30,51 @@ export default function EntryForm({ open, onClose, place }: Props) {
     const dd = String(d.getDate()).padStart(2, '0')
     setDate(`${y}-${m}-${dd}`)
     setTitle('')
-    setComments('')
+    setDescription('')
     setFiles([])
   }, [open])
+
+  const handleSubmit = async () => {
+    if (!place?.id) {
+      console.error('No municipio selected')
+      return
+    }
+
+    // Convert date to UTC ISO string
+    const dateObj = new Date(date + 'T00:00:00')
+    const dateUtc = dateObj.toISOString()
+
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      entry_date: dateUtc,
+      municipio_id: place.id.toString(),
+    }
+
+    const supabase = getPuebloClient()
+
+    setLoading(true)
+    try {
+
+        const { _, error } = await supabase
+            .rpc('insert_entry', {'title': payload.title,'description': payload.description,'entry_date': payload.entry_date,'municipio_id': payload.municipio_id});
+
+      if (error) {
+        throw new Error('Failed to save entry')
+      }
+
+      // Reset form and close
+      setTitle('')
+      setDescription('')
+      setFiles([])
+      onClose()
+    } catch (error) {
+      console.error('Error saving entry:', error)
+      // TODO: Show error message to user
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const placeText = useMemo(() => {
     if (!place) return ''
@@ -71,12 +115,12 @@ export default function EntryForm({ open, onClose, place }: Props) {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">Comments</label>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">Description</label>
             <textarea
               rows={5}
               placeholder="What happened?"
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full resize-none rounded-xl border-2 border-zinc-200 px-3 py-2 outline-none focus:border-blue-500"
             />
           </div>
@@ -121,10 +165,11 @@ export default function EntryForm({ open, onClose, place }: Props) {
           </div>
 
           <button
-            className="mt-2 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700"
-            onClick={onClose}
+            className="mt-2 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700 disabled:opacity-60"
+            onClick={handleSubmit}
+            disabled={loading || !title.trim() || !place?.id}
           >
-            Save
+            {loading ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

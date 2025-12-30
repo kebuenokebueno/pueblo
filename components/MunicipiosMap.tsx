@@ -221,14 +221,7 @@ export default function MunicipiosMap({ municipios, onSelectionChange }: Municip
             }
           }}
         >
-          <Popup eventHandlers={{ 
-            open: () => {
-              onSelectionChange?.(municipio)
-            },
-            close: () => {
-              onSelectionChange?.(null)
-            }
-          }}>
+          <Popup>
             <div className="flex flex-col gap-1">
                 <span className="text-sm text-zinc-900 dark:text-zinc-100">
                   <span className="font-semibold">Municipio:</span>{' '}

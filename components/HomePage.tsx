@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import LocationCapture from '@/components/LocationCapture'
-import LogoutButton from '@/components/LogoutButton'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
@@ -12,6 +11,7 @@ import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
 import type { Municipio } from '@/lib/store/municipiosSlice'
 import { setStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
 import EntryForm from '@/components/EntryForm'
+import Menu from '@/components/Menu'
 
 export default function HomePage() {
   const MunicipiosMap = dynamic(() => import('@/components/MunicipiosMap'), { ssr: false })
@@ -19,6 +19,7 @@ export default function HomePage() {
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
   const [formOpen, setFormOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const handleFetch = useCallback(() => {
     void dispatch(fetchMunicipios())
@@ -50,6 +51,7 @@ export default function HomePage() {
           </div>
           <button
             aria-label="Menu"
+            onClick={() => setMenuOpen(true)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -88,12 +90,9 @@ export default function HomePage() {
         </svg>
       </button>
 
-      <div className="absolute left-4 bottom-6 z-10">
-        <LogoutButton />
-      </div>
-
       <LocationCapture />
       <EntryForm open={formOpen} onClose={() => setFormOpen(false)} />
+      {menuOpen && <Menu onClose={() => setMenuOpen(false)} />}
     </div>
   )
 }

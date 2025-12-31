@@ -7,7 +7,9 @@ import LocationCapture from '@/components/LocationCapture'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { fetchMunicipios } from '@/lib/store/municipiosSlice'
+import { fetchEntries } from '@/lib/store/entriesSlice'
 import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
+import { selectEntriesStatus } from '@/lib/store/selectors'
 import type { Municipio } from '@/lib/store/municipiosSlice'
 import { setStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
 import EntryForm from '@/components/EntryForm'
@@ -18,12 +20,16 @@ export default function HomePage() {
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectMunicipios)
   const status = useAppSelector(selectMunicipiosStatus)
+  const entriesStatus = useAppSelector(selectEntriesStatus)
   const [formOpen, setFormOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const handleFetch = useCallback(() => {
     void dispatch(fetchMunicipios())
-  }, [dispatch])
+    if (entriesStatus === 'idle') {
+      void dispatch(fetchEntries())
+    }
+  }, [dispatch, entriesStatus])
 
   const handleSelectionChange = useCallback(async (m: Municipio | null) => {
     await setStoredSelectedMunicipio(m)

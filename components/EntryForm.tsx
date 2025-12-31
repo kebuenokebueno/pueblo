@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Municipio } from '@/lib/store/municipiosSlice'
 import { getPuebloClient } from "@/lib/supabase/client"
 import { getStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
+import { useAppDispatch } from '@/lib/store/hooks'
+import { fetchEntries } from '@/lib/store/entriesSlice'
 
 type Props = {
   open: boolean
@@ -16,6 +18,7 @@ const isMobile = () => {
 }
 
 export default function EntryForm({ open, onClose }: Props) {
+  const dispatch = useAppDispatch()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState<string>('')
@@ -68,6 +71,13 @@ export default function EntryForm({ open, onClose }: Props) {
 
       if (error) {
         throw new Error('Failed to save entry')
+      }
+
+      // Refresh entries list so the new entry appears
+      try {
+        await dispatch(fetchEntries()).unwrap()
+      } catch (fetchError) {
+        console.error('Failed to refresh entries after save', fetchError)
       }
 
       // Reset form and close

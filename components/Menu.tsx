@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { clearStoredLocation } from '@/lib/locationStorage'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { useAppDispatch } from '@/lib/store/hooks'
 import { resetMunicipios } from '@/lib/store/municipiosSlice'
+import { resetEntries } from '@/lib/store/entriesSlice'
 
 type MenuProps = {
   onClose: () => void
@@ -22,6 +22,7 @@ export default function Menu({ onClose }: MenuProps) {
     } catch {}
     await supabase.auth.signOut()
     dispatch(resetMunicipios())
+    dispatch(resetEntries())
     router.push('/login')
   }
 

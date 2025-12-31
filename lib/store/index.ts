@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 import municipiosReducer from './municipiosSlice'
+import entriesReducer from './entriesSlice'
 
 export const makeStore = () =>
   configureStore({
     reducer: {
       municipios: municipiosReducer,
+      entries: entriesReducer,
     },
   })
 

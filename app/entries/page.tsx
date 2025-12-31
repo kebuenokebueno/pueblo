@@ -4,20 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { getPuebloClient } from '@/lib/supabase/client'
-
-interface Entry {
-  id: number
-  entry_date: string
-  title: string
-  description: string
-  municipio_id: string
-}
+import { useAppSelector } from '@/lib/store/hooks'
+import { selectEntries, selectEntriesStatus } from '@/lib/store/selectors'
 
 export default function EntriesPage() {
   const router = useRouter()
-  const [entries, setEntries] = useState<Entry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const entries = useAppSelector(selectEntries)
+  const status = useAppSelector(selectEntriesStatus)
   const [authStatus, setAuthStatus] = useState<'checking' | 'authed' | 'unauth'>('checking')
 
   useEffect(() => {
@@ -33,30 +26,6 @@ export default function EntriesPage() {
     }
     checkAuth()
   }, [router])
-
-  useEffect(() => {
-    if (authStatus !== 'authed') return
-
-    const fetchEntries = async () => {
-      try {
-        const supabase = getPuebloClient()
-        const { data, error: fetchError } = await supabase
-            .rpc('ultimas_entradas', {});
-
-        if (fetchError) {
-          throw new Error(fetchError.message)
-        }
-
-        setEntries((data as Entry[]) ?? [])
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load entries')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchEntries()
-  }, [authStatus])
 
   const formatDate = (dateString: string) => {
     try {
@@ -100,26 +69,26 @@ export default function EntriesPage() {
       </div>
 
       <div className="px-4 py-6">
-        {loading && (
+        {status === 'loading' && (
           <div className="flex items-center justify-center py-12">
             <div className="text-zinc-600">Loading entries…</div>
           </div>
         )}
 
-        {error && (
+        {status === 'failed' && (
           <div className="rounded-2xl bg-red-50 p-4 text-red-600">
             <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
+            <p className="text-sm">Failed to load entries</p>
           </div>
         )}
 
-        {!loading && !error && entries.length === 0 && (
+        {status === 'succeeded' && entries.length === 0 && (
           <div className="rounded-2xl bg-white p-8 text-center shadow-md">
             <p className="text-zinc-600">No entries yet. Create your first entry!</p>
           </div>
         )}
 
-        {!loading && !error && entries.length > 0 && (
+        {status === 'succeeded' && entries.length > 0 && (
           <div className="space-y-4">
             {entries.map((entry) => (
               <div

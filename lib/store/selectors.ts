@@ -19,3 +19,20 @@ export const selectMunicipiosError = createSelector(
   (municipios) => municipios.error
 )
 
+const selectEntriesState = (state: RootState) => state.entries
+
+export const selectEntries = createSelector(
+  selectEntriesState,
+  (entries) => entries.items
+)
+
+export const selectEntriesStatus = createSelector(
+  selectEntriesState,
+  (entries) => entries.status
+)
+
+export const selectEntriesError = createSelector(
+  selectEntriesState,
+  (entries) => entries.error
+)
+

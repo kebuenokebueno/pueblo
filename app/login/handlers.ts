@@ -5,6 +5,7 @@ import { captureAndStoreLocation } from '@/lib/locationStorage'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { useAppDispatch } from '@/lib/store/hooks'
 import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
+import { fetchEntries, resetEntries } from '@/lib/store/entriesSlice'
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -21,6 +22,7 @@ export function useLoginHandlers(
     setLoading(true)
     setError(null)
     dispatch(resetMunicipios())
+    dispatch(resetEntries())
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -41,6 +43,12 @@ export function useLoginHandlers(
         await dispatch(fetchMunicipios()).unwrap()
       } catch (fetchError) {
         console.error('Failed to fetch municipios after login', fetchError)
+      }
+
+      try {
+        await dispatch(fetchEntries()).unwrap()
+      } catch (fetchError) {
+        console.error('Failed to fetch entries after login', fetchError)
       }
 
       router.push('/')

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { getPuebloClient } from '@/lib/supabase/client'
 import { useAppDispatch } from '@/lib/store/hooks'
 import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
+import { fetchEntries, resetEntries } from '@/lib/store/entriesSlice'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -26,11 +27,18 @@ export default function AuthCallbackPage() {
       }
 
       dispatch(resetMunicipios())
+      dispatch(resetEntries())
 
       try {
         await dispatch(fetchMunicipios()).unwrap()
       } catch (fetchError) {
         console.error('Failed to fetch municipios after OAuth login', fetchError)
+      }
+
+      try {
+        await dispatch(fetchEntries()).unwrap()
+      } catch (fetchError) {
+        console.error('Failed to fetch entries after OAuth login', fetchError)
       }
 
       router.replace(next === '/auth/callback' ? '/' : next)

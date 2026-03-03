@@ -4,7 +4,6 @@ import {
   storageGet,
   storageRemove,
   storageSet,
-  setStorageAdapter,
 } from './platform/storage'
 
 export const LOCATION_KEY = 'userLocation'
@@ -14,9 +13,6 @@ export interface CaptureAndStoreOptions extends LocationFetchOptions {
   force?: boolean
   maxAgeMs?: number
 }
-
-export const registerLocationProvider = setLocationProvider
-export const registerStorageAdapter = setStorageAdapter
 
 export const captureAndStoreLocation = async (
   options: CaptureAndStoreOptions = {}

@@ -6,10 +6,6 @@ export interface AsyncStorageAdapter {
 
 let storageAdapter: AsyncStorageAdapter | null | undefined
 
-export const setStorageAdapter = (adapter: AsyncStorageAdapter | null) => {
-  storageAdapter = adapter ?? null
-}
-
 const detectWebLocalStorage = (): AsyncStorageAdapter | null => {
   if (typeof window === 'undefined' || !window.localStorage) return null
   return {

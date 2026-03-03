@@ -1,31 +1,37 @@
+// ==========================================
+// components/LogoutButton.tsx (ACTUALIZADO)
+// ==========================================
 'use client'
 
-import { clearStoredLocation } from '@/lib/locationStorage'
 import { useRouter } from 'next/navigation'
 import { getPuebloClient } from '@/lib/supabase/client'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { resetMunicipios } from '@/lib/store/municipiosSlice'
+import { useQueryClient } from '@tanstack/react-query'  // ✅ CAMBIO
+import { useAppStore } from '@/lib/store/useAppStore'   // ✅ CAMBIO (si usas selectedMunicipio)
 
 export default function LogoutButton() {
-  const supabase = getPuebloClient()
-  const router = useRouter()
-  const dispatch = useAppDispatch()
+    const router = useRouter()
+    const queryClient = useQueryClient()  // ✅ Para limpiar cache
+    const clearSelectedMunicipio = useAppStore(state => state.clearSelectedMunicipio)  // ✅ Si usas Zustand
 
-  const handleLogout = async () => {
-    try {
-      await clearStoredLocation()
-    } catch {}
-    await supabase.auth.signOut()
-    dispatch(resetMunicipios())
-    router.push('/login')
-  }
+    const handleLogout = async () => {
+        const supabase = getPuebloClient()
 
-  return (
-    <button
-      onClick={handleLogout}
-      className="mt-4 text-blue-600 underline"
-    >
-      Logout
-    </button>
-  )
+        // 1. Logout de Supabase
+        await supabase.auth.signOut()
+
+        // 2. Limpiar cache de TanStack Query
+        queryClient.clear()
+
+        // 3. Limpiar estado UI de Zustand (opcional)
+        clearSelectedMunicipio()
+
+        // 4. Redirect a login o home
+        router.push('/login')  // o '/'
+    }
+
+    return (
+        <button onClick={handleLogout}>
+            Logout
+        </button>
+    )
 }

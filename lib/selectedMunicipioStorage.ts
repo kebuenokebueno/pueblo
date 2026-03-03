@@ -1,4 +1,4 @@
-import type { Municipio } from '@/lib/store/municipiosSlice'
+import type { Municipio } from '@/lib/types'
 import { storageGet, storageSet, storageRemove } from '@/lib/platform/storage'
 
 const SELECTED_MUNICIPIO_KEY = 'selected_municipio'
@@ -25,4 +25,5 @@ export const setStoredSelectedMunicipio = async (municipio: Municipio | null): P
 export const clearStoredSelectedMunicipio = async (): Promise<void> => {
   await storageRemove(SELECTED_MUNICIPIO_KEY)
 }
+
 

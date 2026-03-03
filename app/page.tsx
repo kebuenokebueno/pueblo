@@ -1,26 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import HomePage from '@/components/HomePage'
-import {getPuebloClient} from "@/lib/supabase/client";
+import { useSession } from '@/lib/queries/useSession'
 
 export default function Home() {
   const router = useRouter()
-  const [status, setStatus] = useState<'loading' | 'authed'>('loading')
+  const { data: session, isLoading } = useSession()
 
   useEffect(() => {
-      const supabase = getPuebloClient()
-      supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setStatus('authed')
-      } else {
-        router.replace('/login')
-      }
-    })
-  }, [router])
+    if (isLoading) return
+    if (!session) router.replace('/login')
+  }, [isLoading, router, session])
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="bg-white p-6 rounded-2xl shadow-md">Checking session…</div>
@@ -28,5 +22,6 @@ export default function Home() {
     )
   }
 
+  if (!session) return null
   return <HomePage />
 }

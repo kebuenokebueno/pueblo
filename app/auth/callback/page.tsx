@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getPuebloClient } from '@/lib/supabase/client'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
-import { fetchEntries, resetEntries } from '@/lib/store/entriesSlice'
+import { useQueryClient } from '@tanstack/react-query'
+import { entriesQueryKey, municipiosQueryKey, sessionQueryKey } from '@/lib/queries/keys'
+import { fetchMunicipiosCercanos } from '@/lib/queries/useMunicipiosQuery'
+import { fetchEntries } from '@/lib/queries/useEntriesQuery'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const [status, setStatus] = useState<'verifying' | 'error'>('verifying')
   const [message, setMessage] = useState<string | null>(null)
 
@@ -19,24 +20,31 @@ export default function AuthCallbackPage() {
       const nextParams = new URLSearchParams(window.location.search)
       const next = nextParams.get('next') || '/'
 
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href)
+      const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href)
       if (error) {
         setStatus('error')
         setMessage(error.message || 'Authentication failed')
         return
       }
 
-      dispatch(resetMunicipios())
-      dispatch(resetEntries())
+      queryClient.setQueryData(sessionQueryKey, data.session ?? null)
+      queryClient.removeQueries({ queryKey: municipiosQueryKey })
+      queryClient.removeQueries({ queryKey: entriesQueryKey })
 
       try {
-        await dispatch(fetchMunicipios()).unwrap()
+        await queryClient.prefetchQuery({
+          queryKey: municipiosQueryKey,
+          queryFn: fetchMunicipiosCercanos,
+        })
       } catch (fetchError) {
         console.error('Failed to fetch municipios after OAuth login', fetchError)
       }
 
       try {
-        await dispatch(fetchEntries()).unwrap()
+        await queryClient.prefetchQuery({
+          queryKey: entriesQueryKey,
+          queryFn: fetchEntries,
+        })
       } catch (fetchError) {
         console.error('Failed to fetch entries after OAuth login', fetchError)
       }
@@ -48,7 +56,7 @@ export default function AuthCallbackPage() {
       setStatus('error')
       setMessage(err instanceof Error ? err.message : 'Unexpected error')
     })
-  }, [dispatch, router])
+  }, [queryClient, router])
 
   if (status === 'error') {
     return (

@@ -3,9 +3,10 @@
 import { useRouter } from 'next/navigation'
 import { captureAndStoreLocation } from '@/lib/locationStorage'
 import { getPuebloClient } from '@/lib/supabase/client'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { fetchMunicipios, resetMunicipios } from '@/lib/store/municipiosSlice'
-import { fetchEntries, resetEntries } from '@/lib/store/entriesSlice'
+import { useQueryClient } from '@tanstack/react-query'
+import { entriesQueryKey, municipiosQueryKey, sessionQueryKey } from '@/lib/queries/keys'
+import { fetchMunicipiosCercanos } from '@/lib/queries/useMunicipiosQuery'
+import { fetchEntries } from '@/lib/queries/useEntriesQuery'
 
 export function useLoginHandlers(
   setEmail: (value: string) => void,
@@ -16,13 +17,13 @@ export function useLoginHandlers(
 ) {
   const router = useRouter()
   const supabase = getPuebloClient()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   const handleLogin = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
-    dispatch(resetMunicipios())
-    dispatch(resetEntries())
+    queryClient.removeQueries({ queryKey: municipiosQueryKey })
+    queryClient.removeQueries({ queryKey: entriesQueryKey })
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -32,6 +33,8 @@ export function useLoginHandlers(
         setError(error?.message || 'Login failed')
         return
       }
+
+      queryClient.setQueryData(sessionQueryKey, data.session)
       try {
         await Promise.race([
           captureAndStoreLocation({ force: true, timeoutMs: 2500, maximumAgeMs: 60_000 }),
@@ -40,13 +43,19 @@ export function useLoginHandlers(
       } catch {}
 
       try {
-        await dispatch(fetchMunicipios()).unwrap()
+        await queryClient.prefetchQuery({
+          queryKey: municipiosQueryKey,
+          queryFn: fetchMunicipiosCercanos,
+        })
       } catch (fetchError) {
         console.error('Failed to fetch municipios after login', fetchError)
       }
 
       try {
-        await dispatch(fetchEntries()).unwrap()
+        await queryClient.prefetchQuery({
+          queryKey: entriesQueryKey,
+          queryFn: fetchEntries,
+        })
       } catch (fetchError) {
         console.error('Failed to fetch entries after login', fetchError)
       }

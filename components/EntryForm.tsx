@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Municipio } from '@/lib/store/municipiosSlice'
 import { getPuebloClient } from "@/lib/supabase/client"
-import { getStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { fetchEntries } from '@/lib/store/entriesSlice'
+import { useAppStore } from '@/lib/store/useAppStore'
+import { useQueryClient } from '@tanstack/react-query'
+import { entriesQueryKey } from '@/lib/queries/keys'
 
 type Props = {
   open: boolean
@@ -18,21 +17,16 @@ const isMobile = () => {
 }
 
 export default function EntryForm({ open, onClose }: Props) {
-  const dispatch = useAppDispatch()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState<string>('')
-  const [files, setFiles] = useState<File[]>([])
-  const [loading, setLoading] = useState(false)
-  const [place, setPlace] = useState<Municipio | null>(null)
+    const queryClient = useQueryClient()
+    const [title, setTitle] = useState('')
+    const [description, setDescription] = useState('')
+    const [date, setDate] = useState<string>('')
+    const [files, setFiles] = useState<File[]>([])
+    const [loading, setLoading] = useState(false)
+    const selectedMunicipio = useAppStore((state) => state.selectedMunicipio)
 
   useEffect(() => {
     if (!open) return
-    const loadPlace = async () => {
-      const stored = await getStoredSelectedMunicipio()
-      setPlace(stored)
-    }
-    loadPlace()
     
     const d = new Date()
     const y = d.getFullYear()
@@ -45,7 +39,7 @@ export default function EntryForm({ open, onClose }: Props) {
   }, [open])
 
   const handleSubmit = async () => {
-    if (!place?.id) {
+    if (!selectedMunicipio?.id) {
       console.error('No municipio selected')
       return
     }
@@ -58,7 +52,7 @@ export default function EntryForm({ open, onClose }: Props) {
       title: title.trim(),
       description: description.trim(),
       entry_date: dateUtc,
-      municipio_id: place.id.toString(),
+      municipio_id: selectedMunicipio.id.toString(),
     }
 
     const supabase = getPuebloClient()
@@ -75,7 +69,7 @@ export default function EntryForm({ open, onClose }: Props) {
 
       // Refresh entries list so the new entry appears
       try {
-        await dispatch(fetchEntries()).unwrap()
+        await queryClient.invalidateQueries({ queryKey: entriesQueryKey })
       } catch (fetchError) {
         console.error('Failed to refresh entries after save', fetchError)
       }
@@ -94,11 +88,11 @@ export default function EntryForm({ open, onClose }: Props) {
   }
 
   const placeText = useMemo(() => {
-    if (!place) return ''
-    const n = place.nombre ?? ''
-    const p = place.provincia ?? ''
+    if (!selectedMunicipio) return ''
+    const n = selectedMunicipio.nombre ?? ''
+    const p = selectedMunicipio.provincia ?? ''
     return [n, p].filter(Boolean).join(' • ')
-  }, [place])
+  }, [selectedMunicipio])
 
   if (!open) return null
 
@@ -184,7 +178,7 @@ export default function EntryForm({ open, onClose }: Props) {
           <button
             className="mt-2 w-full rounded-full bg-blue-600 py-3 text-white shadow-md hover:bg-blue-700 disabled:opacity-60"
             onClick={handleSubmit}
-            disabled={loading || !title.trim() || !place?.id}
+            disabled={loading || !title.trim() || !selectedMunicipio?.id}
           >
             {loading ? 'Saving...' : 'Save'}
           </button>

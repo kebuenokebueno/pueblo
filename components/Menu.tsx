@@ -3,9 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { clearStoredLocation } from '@/lib/locationStorage'
 import { getPuebloClient } from '@/lib/supabase/client'
-import { useAppDispatch } from '@/lib/store/hooks'
-import { resetMunicipios } from '@/lib/store/municipiosSlice'
-import { resetEntries } from '@/lib/store/entriesSlice'
+import { useQueryClient } from '@tanstack/react-query'
+import { entriesQueryKey, municipiosQueryKey, sessionQueryKey } from '@/lib/queries/keys'
 
 type MenuProps = {
   onClose: () => void
@@ -13,7 +12,7 @@ type MenuProps = {
 
 export default function Menu({ onClose }: MenuProps) {
   const router = useRouter()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const supabase = getPuebloClient()
 
   const handleLogout = async () => {
@@ -21,8 +20,9 @@ export default function Menu({ onClose }: MenuProps) {
       await clearStoredLocation()
     } catch {}
     await supabase.auth.signOut()
-    dispatch(resetMunicipios())
-    dispatch(resetEntries())
+    queryClient.setQueryData(sessionQueryKey, null)
+    queryClient.removeQueries({ queryKey: municipiosQueryKey })
+    queryClient.removeQueries({ queryKey: entriesQueryKey })
     router.push('/login')
   }
 

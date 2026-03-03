@@ -4,7 +4,7 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap, Circle, CircleMarker } from 'react-leaflet'
 import L, { LatLngExpression } from 'leaflet'
 
-import type { Municipio } from '@/lib/store/municipiosSlice'
+import type { Municipio } from '@/lib/types'
 import { storageGet } from '@/lib/platform/storage'
 import { LOCATION_KEY } from '@/lib/locationStorage'
 

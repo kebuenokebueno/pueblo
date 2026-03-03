@@ -1,31 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { getPuebloClient } from '@/lib/supabase/client'
-import { useAppSelector } from '@/lib/store/hooks'
-import { selectEntries, selectEntriesStatus } from '@/lib/store/selectors'
+import { useSession } from '@/lib/queries/useSession'
+import { useEntriesQuery } from '@/lib/queries/useEntriesQuery'
 
 export default function EntriesPage() {
   const router = useRouter()
-  const entries = useAppSelector(selectEntries)
-  const status = useAppSelector(selectEntriesStatus)
-  const [authStatus, setAuthStatus] = useState<'checking' | 'authed' | 'unauth'>('checking')
+  const { data: session, isLoading: sessionLoading } = useSession()
+  const entriesQuery = useEntriesQuery(!!session)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = getPuebloClient()
-      const { data } = await supabase.auth.getSession()
-      if (data.session) {
-        setAuthStatus('authed')
-      } else {
-        setAuthStatus('unauth')
-        router.replace('/login')
-      }
-    }
-    checkAuth()
-  }, [router])
+    if (sessionLoading) return
+    if (!session) router.replace('/login')
+  }, [router, session, sessionLoading])
 
   const formatDate = (dateString: string) => {
     try {
@@ -40,13 +29,15 @@ export default function EntriesPage() {
     }
   }
 
-  if (authStatus === 'checking') {
+  if (sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#eaf2ff] to-[#eef7ef]">
         <div className="rounded-2xl bg-white p-6 shadow-md">Checking session…</div>
       </div>
     )
   }
+
+  if (!session) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#eaf2ff] to-[#eef7ef]">
@@ -69,28 +60,28 @@ export default function EntriesPage() {
       </div>
 
       <div className="px-4 py-6">
-        {status === 'loading' && (
+        {entriesQuery.status === 'pending' && (
           <div className="flex items-center justify-center py-12">
             <div className="text-zinc-600">Loading entries…</div>
           </div>
         )}
 
-        {status === 'failed' && (
+        {entriesQuery.status === 'error' && (
           <div className="rounded-2xl bg-red-50 p-4 text-red-600">
             <p className="font-medium">Error</p>
             <p className="text-sm">Failed to load entries</p>
           </div>
         )}
 
-        {status === 'succeeded' && entries.length === 0 && (
+        {entriesQuery.status === 'success' && (entriesQuery.data?.length ?? 0) === 0 && (
           <div className="rounded-2xl bg-white p-8 text-center shadow-md">
             <p className="text-zinc-600">No entries yet. Create your first entry!</p>
           </div>
         )}
 
-        {status === 'succeeded' && entries.length > 0 && (
+        {entriesQuery.status === 'success' && (entriesQuery.data?.length ?? 0) > 0 && (
           <div className="space-y-4">
-            {entries.map((entry) => (
+            {entriesQuery.data!.map((entry) => (
               <div
                 key={entry.id}
                 className="rounded-2xl bg-white p-4 shadow-md ring-1 ring-black/[0.04]"

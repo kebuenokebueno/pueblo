@@ -1,51 +1,31 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import LocationCapture from '@/components/LocationCapture'
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
-import { getPuebloClient } from '@/lib/supabase/client'
-import { fetchMunicipios } from '@/lib/store/municipiosSlice'
-import { fetchEntries } from '@/lib/store/entriesSlice'
-import { selectMunicipios, selectMunicipiosStatus } from '@/lib/store/selectors'
-import { selectEntriesStatus } from '@/lib/store/selectors'
-import type { Municipio } from '@/lib/store/municipiosSlice'
-import { setStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
+import { useSession } from '@/lib/queries/useSession'
+import { useMunicipiosQuery } from '@/lib/queries/useMunicipiosQuery'
+import { useEntriesQuery } from '@/lib/queries/useEntriesQuery'
+import type { Municipio } from '@/lib/types'
+import { useAppStore } from '@/lib/store/useAppStore'
 import EntryForm from '@/components/EntryForm'
 import Menu from '@/components/Menu'
 
 export default function HomePage() {
   const MunicipiosMap = dynamic(() => import('@/components/MunicipiosMap'), { ssr: false })
-  const dispatch = useAppDispatch()
-  const items = useAppSelector(selectMunicipios)
-  const status = useAppSelector(selectMunicipiosStatus)
-  const entriesStatus = useAppSelector(selectEntriesStatus)
+  const { data: session } = useSession()
+  const municipiosQuery = useMunicipiosQuery(!!session)
+  // Warm the entries cache while on home so /entries loads instantly.
+  useEntriesQuery(!!session)
   const [formOpen, setFormOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const handleFetch = useCallback(() => {
-    void dispatch(fetchMunicipios())
-    if (entriesStatus === 'idle') {
-      void dispatch(fetchEntries())
-    }
-  }, [dispatch, entriesStatus])
+    const setSelectedMunicipio = useAppStore((state) => state.setSelectedMunicipio)
 
-  const handleSelectionChange = useCallback(async (m: Municipio | null) => {
-    await setStoredSelectedMunicipio(m)
-  }, [])
-
-  useEffect(() => {
-    if (status !== 'idle') return
-
-    const supabase = getPuebloClient()
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        handleFetch()
-      }
-    })
-  }, [handleFetch, status])
+    const handleSelectionChange = useCallback((m: Municipio | null) => {
+        setSelectedMunicipio(m)
+    }, [setSelectedMunicipio])
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-zinc-100">
@@ -68,18 +48,18 @@ export default function HomePage() {
       </div>
 
       <div className="mt-4 absolute inset-0">
-        {status === 'succeeded' && (
+        {municipiosQuery.status === 'success' && (
           <div className="h-full w-full pt-16">
             <MunicipiosMap
-              municipios={items}
+              municipios={municipiosQuery.data ?? []}
               onSelectionChange={handleSelectionChange}
             />
           </div>
         )}
-        {status === 'loading' && (
+        {municipiosQuery.status === 'pending' && (
           <div className="flex h-full items-center justify-center text-zinc-600">Preparando el mapa…</div>
         )}
-        {status === 'failed' && (
+        {municipiosQuery.status === 'error' && (
           <div className="flex h-full items-center justify-center text-red-600">
             No se puede mostrar el mapa sin datos disponibles.
           </div>

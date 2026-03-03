@@ -8,7 +8,7 @@ import { useSession } from '@/lib/queries/useSession'
 import { useMunicipiosQuery } from '@/lib/queries/useMunicipiosQuery'
 import { useEntriesQuery } from '@/lib/queries/useEntriesQuery'
 import type { Municipio } from '@/lib/types'
-import { setStoredSelectedMunicipio } from '@/lib/selectedMunicipioStorage'
+import { useAppStore } from '@/lib/store/useAppStore'
 import EntryForm from '@/components/EntryForm'
 import Menu from '@/components/Menu'
 
@@ -21,9 +21,11 @@ export default function HomePage() {
   const [formOpen, setFormOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const handleSelectionChange = useCallback(async (m: Municipio | null) => {
-    await setStoredSelectedMunicipio(m)
-  }, [])
+    const setSelectedMunicipio = useAppStore((state) => state.setSelectedMunicipio)
+
+    const handleSelectionChange = useCallback((m: Municipio | null) => {
+        setSelectedMunicipio(m)
+    }, [setSelectedMunicipio])
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-zinc-100">

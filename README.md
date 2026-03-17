@@ -4,15 +4,7 @@ A modern location-based journaling web application that allows users to create a
 
 **🌐 Live Demo:** [https://pueblo-six.vercel.app/](https://pueblo-six.vercel.app/)
 
-![Demo](demo.mp4)
-
-> **Note:** To add the demo.gif to your repository, convert the provided video file using:
-> ```bash
-> ffmpeg -i Grabacio_n_de_pantalla_2026-03-17_a_las_9_14_27.mov -vf "fps=10,scale=800:-1:flags=lanczos" -c:v gif demo.gif
-> ```
-> Or use an online converter like [ezgif.com](https://ezgif.com/video-to-gif)
-
----
+![Demo](demo.gif)
 
 ## 📱 Overview
 

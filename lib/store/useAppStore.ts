@@ -33,12 +33,11 @@ export const useAppStore = create<AppStore>()(
       }),
       {
         name: 'app-storage', // localStorage key
-        // Solo persistir lo necesario
         partialize: (state) => ({
           selectedMunicipio: state.selectedMunicipio,
         }),
       }
     ),
-    { name: 'AppStore' } // Nombre en Redux DevTools
+    { name: 'pueblo/ui' }
   )
 )
